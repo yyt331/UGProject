@@ -1,13 +1,11 @@
 import os
 import cv2
 
-def resize_image(input_path, output_size, output_path):
-
-    image = cv2.imread(input_path)
+def resize_image(image, output_size):
     
     resized_image = cv2.resize(image, output_size, interpolation=cv2.INTER_AREA)
-    
-    cv2.imwrite(output_path, resized_image)
+
+    return resized_image
 
 if __name__ == "__main__":
 
