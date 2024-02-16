@@ -8,20 +8,23 @@ def process_image(input_folder, output_folder, output_size, val_thresh=30):
 
     os.makedirs(output_folder, exist_ok=True)
 
-    for file in os.listdir(input_folder):
-        if file.lower().endswith('.jpg'):
-            input_path = os.path.join(input_folder, file)
-            img = cv2.imread(input_path)
+    for subdir, dirs, files in os.walk(input_folder):
+        for file in files:
+            if file.lower().endswith('.jpg'):
+                input_path = os.path.join(subdir, file)
+                img = cv2.imread(input_path)
 
-            if img is None:
-                print(f"Unable to load image {input_path}.")
-                continue
+                if img is None:
+                    print(f"Unable to load image {input_path}.")
+                    continue
 
-            bbox = cropImage.getLargestBBoxArea(img, val_thresh)
-            cropped_img = cropImage.crop_image(img, bbox)
+                bbox = cropImage.getLargestBBoxArea(img, val_thresh)
+                cropped_img = cropImage.crop_image(img, bbox)
 
-            output_path = os.path.join(output_folder, f"cropped_{file}")
-            resize_image(cropped_img, output_size, output_path)
+                resized_image = resize_image(cropped_img, output_size)
+                output_path = os.path.join(output_folder, f"cropped_{file}")
+
+                cv2.imwrite(output_path, resized_image)
 
 if __name__ == "__main__":
     dataset = '/Users/Windows/Desktop/dataset'
