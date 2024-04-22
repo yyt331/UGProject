@@ -4,45 +4,53 @@ import pandas as pd
 import torch.nn as nn
 import torch
 import torch.nn.functional as F
+import torchvision.transforms as transforms
 from torchvision import models
+from PIL import Image
 from keras.models import load_model, Model
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
 def load_images(csv_file):
     data = pd.read_csv(csv_file)
-    images = []
     labels = data['label'].tolist()
     image_paths = data['image_path'].tolist()
 
-    label_mapping = {0.0: 0, 0.5: 1, 1.0: 1}
-    mapped_labels = [label_mapping[label] for label in labels]
+    classifier_transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ])
+    
+    autoencoder_transform = transforms.Compose([
+        transforms.Resize((256, 256)),
+        transforms.ToTensor()
+    ])
 
+    classifier_images, autoencoder_images = [], []
     for img_path in image_paths:
-        img = cv2.imread(img_path, cv2.IMREAD_COLOR)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        img = img.astype('float32') / 255.
-        img = np.expand_dims(img, axis=-1)
-        images.append(img)
+        image = Image.open(img_path).convert('RGB')
+        classifier_images.append(classifier_transform(image))
+        autoencoder_images.append(autoencoder_transform(image.convert('L')))
 
-    return np.array(images), np.array(mapped_labels), image_paths
+    return torch.stack(classifier_images), torch.stack(autoencoder_images), np.array(labels), image_paths
 
 def load_pytorch_classifier(model_path, device):
-    model = models.alexnet(pretrained=True)
-    model.classifier[6] = torch.nn.Linear(model.classifier[6].in_features, 2)
+    model = models.alexnet(pretrained=False)
+    num_ftrs = model.classifier[6].in_features
+    model.classifier[6] = nn.Linear(num_ftrs, 2)
     model.load_state_dict(torch.load(model_path))
     model = model.to(device)
     model.eval()
     return model
 
 def classify_test_set(model, test_images, device):
-    test_images_tensor = torch.tensor(test_images, device=device)
-    outputs = model(test_images_tensor)
-    probs = F.softmax(outputs, dim=1)
+    test_images = test_images.to(device)
+    with torch.no_grad():
+        outputs = model(test_images)
+        probs = F.softmax(outputs, dim=1)
     confidence_scores, predicted_classes = torch.max(probs, 1)
-    predicted_classes = predicted_classes.detach().cpu().numpy()
-    confidence_scores = confidence_scores.detach().cpu().numpy()
-    return predicted_classes, confidence_scores
+    return predicted_classes.cpu().numpy(), confidence_scores.cpu().numpy()
 
 # def classify_test_set(classifier, test_images, threshold=0.3):
 #     test_images_tensor = torch.tensor(test_images, dtype=torch.float32)
@@ -57,70 +65,69 @@ def classify_test_set(model, test_images, device):
     
 #     return predicted_class_np, confidence_score_np
 
-def retrieve_similar_images(test_image, encoded_images, n=10):
-    test_image_reshaped = test_image.reshape(1, 32, 32, 8)
-    distances = np.array([np.linalg.norm(encoded_image.flatten() - test_image_reshaped.flatten()) for encoded_image in encoded_images])
-    idx_closest = distances.argsort()[:n]
-    return idx_closest
+def retrieve_similar_images(test_image, embeddings, n=10):
+    flattened_embeddings = embeddings.reshape(embeddings.shape[0], -1)
+    distances = np.linalg.norm(flattened_embeddings - test_image, axis=1)
+    indices = np.argsort(distances)[:n]
+    return indices
 
 def calculate_accuracy(y_true, y_pred):
-    correct_predictions = np.sum(y_true == y_pred)
-    total_predictions = len(y_true)
-    accuracy = correct_predictions / total_predictions
-    return accuracy
+    return np.mean(y_true == y_pred)
 
 def display_similar_images(indices, test_image, image_paths):
-    plt.figure(figsize=(15, 10))
-    plt.subplot(3, 4, 1)
+    num_similar_images = len(indices)
+    num_columns = 5  # for example, you can choose another layout
+    num_rows = num_similar_images // num_columns + 1
+
+    plt.figure(figsize=(15, 3 * num_rows))
+    plt.subplot(num_rows, num_columns, 1)
     plt.imshow(test_image)
     plt.title("Test Image")
-    for i, idx in enumerate(indices, start=1):
-        img_path = image_paths[idx]
-        img = cv2.imread(img_path, cv2.IMREAD_COLOR)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        plt.subplot(3, 4, i+1)
+    plt.axis('off')
+
+    # Display Similar Images
+    for i, idx in enumerate(indices):
+        plt.subplot(num_rows, num_columns, i + 2)
+        img = Image.open(image_paths[idx])
+        img = np.array(img)
         plt.imshow(img)
-        plt.title(f"Similar {i}")
+        plt.title(f"Similar {i+1}")
+        plt.axis('off')
+
+    plt.tight_layout()
     plt.show()
 
 if __name__ == "__main__":
-    dataset_csv_file = 'C:/Users/Windows/Desktop/dataset_labelled.csv'
+    dataset_csv_file = 'C:/Users/Windows/Desktop/labelled_dataset.csv'
     autoencoder_model = 'C:/Users/Windows/Desktop/UGProject/Backend/autoEncoder/checkpoints/autoencoder_basic.keras'
-    classifier_model = 'C:/Users/Windows/Desktop/UGProject/Backend/autoEncoder/checkpoints/classifier.pth'
+    classifier_model = 'C:/Users/Windows/Desktop/UGProject/Backend/autoEncoder/checkpoints/best_classifier.pth'
     embedding_file = 'C:/Users/Windows/Desktop/UGProject/Backend/autoEncoder/AE_colon.npy'
     embeddings = np.load(embedding_file)
 
-    images, labels, image_paths = load_images(dataset_csv_file)
+    classifier_images, autoencoder_images, labels, image_paths = load_images(dataset_csv_file)
 
-    _, x_test, _, y_test = train_test_split(images, labels, test_size=0.4, random_state=1)
+    _, x_test_classifier, _, y_test = train_test_split(classifier_images, labels, test_size=0.2, random_state=1)
+    _, x_test_ae, _, _ = train_test_split(autoencoder_images, labels, test_size=0.2, random_state=1)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     autoencoder = load_model(autoencoder_model)
-    encoder = Model(inputs=autoencoder.input, outputs=autoencoder.get_layer('encoded').output)
     classifier = load_pytorch_classifier(classifier_model, device)
 
-    if x_test.ndim == 5:  
-        x_test = np.squeeze(x_test, axis=-1)
+    x_test_classifier = F.interpolate(x_test_classifier, size=(224, 224))
 
-    x_test_gray = np.dot(x_test[...,:3], [0.2989, 0.5870, 0.1140]).astype(np.float32)  # Convert to grayscale
-    x_test_gray = np.expand_dims(x_test_gray, axis=-1)
+    predicted_classes, confidence_scores = classify_test_set(classifier, x_test_classifier, device)
 
-    test_images = encoder.predict(x_test_gray).reshape(-1, 32*32*8)
-    test_images = test_images.astype(np.float32) 
-    x_test_resized = [cv2.resize(img, (224, 224)) for img in x_test.squeeze()] 
-    x_test_resized = np.stack(x_test_resized).reshape((-1, 3, 224, 224)) 
-    threshold = 0.3
-    predicted_class, confidence_score = classify_test_set(classifier, x_test_resized, device)
+    label_to_string = {0: 'Normal', 1: 'Abnormal'}
+    for i, pred in enumerate(predicted_classes):
+        print(f"Image {i}: Prediction - {label_to_string[pred]}, Confidence score - {confidence_scores[i]:.2f}")
 
-    label_to_string = {0: 'normal', 1: 'abnormal'}
-    predicted_labels = [label_to_string[pred] for pred in predicted_class]
-
-    accuracy = calculate_accuracy(y_test, predicted_class)
+    accuracy = calculate_accuracy(y_test, predicted_classes)
     print(f"Accuracy: {accuracy:.2%}")
 
-    for i, label in enumerate(predicted_labels):
-        print(f"Image {i}: Prediction - {label}, Confidence score - {confidence_score[i]:.2f}")
+    embeddings = autoencoder.predict(x_test_ae.numpy().reshape(-1, 256, 256, 1)).reshape(-1, 256*256)
 
-    chosen_test_image = test_images[1]
-    idx_closest_images = retrieve_similar_images(chosen_test_image, embeddings)
-    display_similar_images(idx_closest_images, x_test[1], image_paths)
+    test_image_flattened = x_test_ae[1].numpy().flatten()
+    idx_closest_images = retrieve_similar_images(test_image_flattened, embeddings)
+    test_image_to_display = x_test_classifier[1].permute(1, 2, 0).numpy()
+    test_image_to_display = (test_image_to_display - test_image_to_display.min()) / (test_image_to_display.max() - test_image_to_display.min())  # Normalize to 0-1 for display
+    display_similar_images(idx_closest_images, test_image_to_display, image_paths)
