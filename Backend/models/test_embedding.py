@@ -33,10 +33,12 @@ def embedding(encoder, alldata, embeddingFile):
 
 if __name__ == "__main__":
     from keras.models import Model
+    # Replace the file path to the actual file path in your device
     dataset = 'C:/Users/Windows/Desktop/embeddings'
     images = load_images(dataset)   
 
-    autoencoder = load_model("C:/Users/Windows/Desktop/UGProject/Backend/autoEncoder/checkpoints/test_autoencoder_basic.keras")
+    # Replace the file path to the actual file path in your device
+    autoencoder = load_model("C:/Users/Windows/Desktop/UGProject/Backend/models/checkpoints/autoencoder_basic.keras")
     encoder = Model(inputs=autoencoder.input, outputs=autoencoder.get_layer('encoded').output)
-    embeddingFile = 'C:/Users/Windows/Desktop/UGProject/Backend/autoEncoder/AE.npy'
+    embeddingFile = 'C:/Users/Windows/Desktop/UGProject/Backend/models/AE.npy'
     emb = embedding(encoder, images, embeddingFile)
