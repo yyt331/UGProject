@@ -48,7 +48,7 @@ def train_model(input_shape, x_train, x_train_noisy, epochs=100, batch_size=128)
     autoencoder.summary()
 
     # Replace the file path to the actual file path in your device
-    checkpoint = ModelCheckpoint(filepath='C:/Users/Windows/Desktop/UGProject/Backend/autoEncoder/checkpoints/test_autoencoder_basic.keras', save_best_only=True, verbose=1)
+    checkpoint = ModelCheckpoint(filepath='C:/Users/Windows/Desktop/UGProject/Backend/models/checkpoints/autoencoder_basic.keras', save_best_only=True, verbose=1)
     
     history = autoencoder.fit(x_train_noisy, x_train, epochs=epochs, 
                     batch_size=batch_size, 
