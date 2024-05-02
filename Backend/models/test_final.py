@@ -92,9 +92,9 @@ if __name__ == "__main__":
     # Replace the file paths to the actual file paths in your device
     dataset_csv = 'C:/Users/Windows/Desktop/labelled_dataset.csv'
     test_dataset_csv = 'C:/Users/Windows/Desktop/test_labelled_dataset.csv'
-    autoencoder_model = 'C:/Users/Windows/Desktop/UGProject/Backend/autoEncoder/checkpoints/autoencoder_basic.keras'
-    classifier_model = 'C:/Users/Windows/Desktop/UGProject/Backend/autoEncoder/checkpoints/best_classifier.pth'
-    embedding_file = 'C:/Users/Windows/Desktop/UGProject/Backend/autoEncoder/AE.npy'
+    autoencoder_model = 'C:/Users/Windows/Desktop/UGProject/Backend/models/checkpoints/autoencoder_basic.keras'
+    classifier_model = 'C:/Users/Windows/Desktop/UGProject/Backend/models/checkpoints/best_classifier.pth'
+    embedding_file = 'C:/Users/Windows/Desktop/UGProject/Backend/models/AE.npy'
     embeddings = np.load(embedding_file)
 
     x_test_classifier, y_test, test_image_paths = load_images(test_dataset_csv, is_classifier=True)
