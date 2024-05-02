@@ -18,6 +18,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# # Replace the paths to the actual paths on your device
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'C:/Users/Windows/Desktop/ezendo_images.json'
 
 # Quick-start development settings - unsuitable for production
