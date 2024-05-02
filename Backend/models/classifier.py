@@ -53,9 +53,10 @@ def train_classifier(encoder, x_train, y_train, epochs=100, batch_size=128):
 
     y_train_categorical = to_categorical(y_train, num_classes=2)
 
+    # Replace the file path to the actual file path in your device
     history = classifier.fit(x_train_encoded, y_train_categorical, epochs=epochs, batch_size=batch_size,
                              validation_split=0.2, shuffle=True,
-                             callbacks=[ModelCheckpoint(filepath='C:/Users/Windows/Desktop/UGProject/Backend/autoEncoder/checkpoints/original_classifier.keras', save_best_only=True, verbose=1),
+                             callbacks=[ModelCheckpoint(filepath='C:/Users/Windows/Desktop/UGProject/Backend/models/checkpoints/classifier.keras', save_best_only=True, verbose=1),
                                         TensorBoard(log_dir='./logs', histogram_freq=0, write_graph=False)],
                              class_weight=class_weight_dict)
     return history
@@ -82,11 +83,13 @@ def plot_training_history(history):
     plt.show()
 
 if __name__ == "__main__":
+    # Replace the file path to the actual file path in your device
     csv_file = 'C:/Users/Windows/Desktop/labelled_dataset.csv'
     images, labels = load_images(csv_file)
     x_train, x_test, y_train, y_test = train_test_split(images, labels, test_size=0.2, random_state=1)
 
-    autoencoder = load_model('C:/Users/Windows/Desktop/UGProject/Backend/autoEncoder/checkpoints/test_autoencoder_basic.keras')
+    # Replace the file path to the actual file path in your device
+    autoencoder = load_model('C:/Users/Windows/Desktop/UGProject/Backend/models/checkpoints/autoencoder_basic.keras')
     encoder = Model(inputs=autoencoder.input, outputs=autoencoder.get_layer('encoded').output)
 
     history = train_classifier(encoder, x_train, y_train, epochs=100, batch_size=128)
