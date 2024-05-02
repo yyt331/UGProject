@@ -11,6 +11,7 @@ from django.conf import settings
 from google.cloud import storage
 import cv2
 
+# Replace the paths to the actual paths on your device
 classifier_model_path = 'C:/Users/Windows/Desktop/UGProject/Backend/autoEncoder/checkpoints/best_classifier.pth'
 autoencoder_model_path = 'C:/Users/Windows/Desktop/UGProject/Backend/autoEncoder/checkpoints/autoencoder_basic.keras'
 
@@ -71,6 +72,7 @@ def get_embedding(image_bytes):
 
 
 def find_similar_images(embedding, n=10):
+    # Replace the paths to the actual paths on your device
     dataset_embeddings = np.load('C:/Users/Windows/Desktop/UGProject/Backend/autoEncoder/AE_colon.npy')
     client = storage.Client()
 
