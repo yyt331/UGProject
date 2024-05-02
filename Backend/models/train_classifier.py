@@ -31,6 +31,7 @@ transform = transforms.Compose([
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])
 
+# Replace this with the actual path to your file
 dataset = CustomDataset(csv_file='C:/Users/Windows/Desktop/labelled_dataset.csv', transform=transform)
 train_size = int(0.8 * len(dataset))
 val_size = len(dataset) - train_size
@@ -98,9 +99,10 @@ for epoch in range(num_epochs):
     
     scheduler.step(avg_val_loss)
 
+    # replace the file path with the actual file path to be saved on your device
     if avg_val_loss < best_val_loss:
         best_val_loss = avg_val_loss
-        torch.save(model.state_dict(), 'C:/Users/Windows/Desktop/UGProject/Backend/autoEncoder/checkpoints/test_classifier.pth')
+        torch.save(model.state_dict(), 'C:/Users/Windows/Desktop/UGProject/Backend/autoEncoder/checkpoints/best_classifier.pth')
 
     print(f'Epoch {epoch+1}/{num_epochs}, Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}, Train Accuracy: {train_accuracy:.2f}%, Val Accuracy: {val_accuracy:.2f}%')
 
