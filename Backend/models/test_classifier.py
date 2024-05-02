@@ -1,3 +1,5 @@
+# Intial attempt to train classifier from scratch
+
 import cv2
 import numpy as np
 import pandas as pd
