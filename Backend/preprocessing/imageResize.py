@@ -8,7 +8,7 @@ def resize_image(image, output_size):
     return resized_image
 
 if __name__ == "__main__":
-
+    # replace paths with the actual path for the file
     dataset = '/Users/Windows/Desktop/dataset'
     new_dataset = '/Users/Windows/Desktop/new_dataset'
 
