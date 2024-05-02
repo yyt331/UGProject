@@ -27,6 +27,7 @@ def process_image(input_folder, output_folder, output_size, val_thresh=30):
                 cv2.imwrite(output_path, resized_image)
 
 if __name__ == "__main__":
+    # replace the paths to the actual paths to the files
     dataset = '/Users/Windows/Desktop/dataset'
     new_dataset = '/Users/Windows/Desktop/cropped_images'
     new_size = (256, 256)
