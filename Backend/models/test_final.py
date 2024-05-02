@@ -78,7 +78,6 @@ def display_similar_images(indices, test_image, image_paths):
     plt.title("Test Image")
     plt.axis('off')
 
-    # Display similar images in RGB
     for i, idx in enumerate(indices):
         img_rgb = Image.open(image_paths[idx])
         plt.subplot(1, len(indices) + 1, i + 2)
@@ -90,10 +89,11 @@ def display_similar_images(indices, test_image, image_paths):
     plt.show()
 
 if __name__ == "__main__":
+    # Replace the file paths to the actual file paths in your device
     dataset_csv = 'C:/Users/Windows/Desktop/labelled_dataset.csv'
     test_dataset_csv = 'C:/Users/Windows/Desktop/test_labelled_dataset.csv'
-    autoencoder_model = 'C:/Users/Windows/Desktop/UGProject/Backend/autoEncoder/checkpoints/test_autoencoder_basic.keras'
-    classifier_model = 'C:/Users/Windows/Desktop/UGProject/Backend/autoEncoder/checkpoints/test_classifier.pth'
+    autoencoder_model = 'C:/Users/Windows/Desktop/UGProject/Backend/autoEncoder/checkpoints/autoencoder_basic.keras'
+    classifier_model = 'C:/Users/Windows/Desktop/UGProject/Backend/autoEncoder/checkpoints/best_classifier.pth'
     embedding_file = 'C:/Users/Windows/Desktop/UGProject/Backend/autoEncoder/AE.npy'
     embeddings = np.load(embedding_file)
 
@@ -149,7 +149,7 @@ if __name__ == "__main__":
     idx_closest_images = retrieve_similar_images(test_embedding, embeddings)
 
     test_image = x_test_classifier[test_image_index].permute(1, 2, 0).numpy()
-    test_image = test_image * np.array([0.229, 0.224, 0.225]) + np.array([0.485, 0.456, 0.406])  # Reverse normalization
+    test_image = test_image * np.array([0.229, 0.224, 0.225]) + np.array([0.485, 0.456, 0.406])
     test_image = np.clip(test_image, 0, 1)
 
     display_similar_images(idx_closest_images, test_image, image_paths)
