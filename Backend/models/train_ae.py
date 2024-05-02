@@ -47,6 +47,7 @@ def train_model(input_shape, x_train, x_train_noisy, epochs=100, batch_size=128)
     callback = keras.callbacks.EarlyStopping(monitor='loss',  patience=50)
     autoencoder.summary()
 
+    # Replace the file path to the actual file path in your device
     checkpoint = ModelCheckpoint(filepath='C:/Users/Windows/Desktop/UGProject/Backend/autoEncoder/checkpoints/test_autoencoder_basic.keras', save_best_only=True, verbose=1)
     
     history = autoencoder.fit(x_train_noisy, x_train, epochs=epochs, 
@@ -58,6 +59,7 @@ def train_model(input_shape, x_train, x_train_noisy, epochs=100, batch_size=128)
     return autoencoder, history
 
 if __name__ == "__main__":
+    # Replace the file path to the actual file path in your device
     csv_file = 'C:/Users/Windows/Desktop/labelled_dataset.csv'
     images, labels = load_images(csv_file)
 
