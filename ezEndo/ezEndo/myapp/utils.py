@@ -73,7 +73,7 @@ def get_embedding(image_bytes):
 
 def find_similar_images(embedding, n=10):
     # Replace the paths to the actual paths on your device
-    dataset_embeddings = np.load('C:/Users/Windows/Desktop/UGProject/Backend/autoEncoder/AE_colon.npy')
+    dataset_embeddings = np.load('C:/Users/Windows/Desktop/UGProject/Backend/autoEncoder/AE.npy')
     client = storage.Client()
 
     bucket = client.bucket('ezendo_images')
